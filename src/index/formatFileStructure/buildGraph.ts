@@ -4,6 +4,7 @@ import { addEdge } from "./buildGraph/addEdge";
 import { Graph, OldGraph } from "./shared/Graph";
 import { findSharedParent } from "./shared/findSharedParent";
 import { customResolve } from "./shared/customResolve";
+import logger from "../../shared/logger";
 
 export function buildGraph(files: string[]) {
   const parentFolder = findSharedParent(files);
@@ -32,16 +33,19 @@ export function buildGraph(files: string[]) {
         numBackSlashes++;
       }
 
-      const pathWithExtension = customResolve(edge[1], path.dirname(edge[0]));
+      try {
+        const pathWithExtension = customResolve(edge[1], path.dirname(edge[0]));
+        const end = path.relative(parentFolder, pathWithExtension);
 
-      const end = path.relative(parentFolder, pathWithExtension);
+        addEdge([start, end], graph);
 
-      addEdge([start, end], graph);
-
-      oldGraph[start].imports.push({
-        text: edge[1],
-        resolved: end,
-      });
+        oldGraph[start].imports.push({
+          text: edge[1],
+          resolved: end,
+        });
+      } catch (e) {
+        logger.warn(`Unable to import ${edge[1]}`);
+      }
     });
   }
 

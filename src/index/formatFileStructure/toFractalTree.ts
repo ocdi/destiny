@@ -28,7 +28,9 @@ export function toFractalTree(graph: Graph, entryPoints: string[]) {
 
     if (Object.values(res).includes(location)) {
       newLocation = path.join(dirname, filePath.replace(/\//g, "-"));
-      logger.info(`File renamed: ${filePath} -> ${newLocation}`);
+      logger.info(
+        `File renamed: ${filePath} -> ${newLocation} (was ${location})`
+      );
     }
 
     return newLocation ?? location;
@@ -89,11 +91,14 @@ export function toFractalTree(graph: Graph, entryPoints: string[]) {
   if (!containsCycle) {
     Object.entries(dependencies).forEach(([k, v]) => {
       if (v.length > 1 && !k.includes("..")) {
-        const parent = findSharedParent(v);
+        let parent = findSharedParent(v);
+        if (parent) {
+          parent = path.basename(parent, path.extname(parent));
+        }
         const filename = path.basename(k);
         const upperFolder = path.basename(path.dirname(k));
 
-        res[k] = path.join(
+        let proposed = path.join(
           parent,
           "shared",
           path.basename(filename, path.extname(filename)) === "index" &&
@@ -102,6 +107,11 @@ export function toFractalTree(graph: Graph, entryPoints: string[]) {
             ? upperFolder + path.extname(filename)
             : filename
         );
+
+        // check for duplicate dependencies for shared items
+        proposed = checkDuplicates(proposed, "shared", k);
+
+        res[k] = proposed;
       }
     });
   }

@@ -9,7 +9,8 @@ import logger from "../shared/logger";
 
 export const formatFileStructure = async (
   rootDirFiles: string[][],
-  filesToEdit: string[]
+  filesToEdit: string[],
+  entries: string[]
 ) => {
   const unusedFiles: string[] = [];
   const rootOptions: RootOption[] = [];
@@ -24,7 +25,13 @@ export const formatFileStructure = async (
     const { graph, files, useForwardSlash, parentFolder } = buildGraph(
       startingFiles
     );
-    const tree = toFractalTree(graph, findEntryPoints(graph));
+
+    let foundEntries = findEntryPoints(graph);
+    if (entries.length) {
+      foundEntries = foundEntries.filter(a => entries.includes(a));
+    }
+
+    const tree = toFractalTree(graph, foundEntries);
     const usedFiles = new Set(Object.entries(graph).flat(2));
 
     rootOptions.push({

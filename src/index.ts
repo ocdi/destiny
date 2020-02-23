@@ -34,6 +34,7 @@ const printHelp = (exitCode: number) => {
 
   -V, --version            output version number
   -h, --help               output usage information
+  -e, --entrypoint         explicit entrypoint
   `
   );
 
@@ -42,9 +43,16 @@ const printHelp = (exitCode: number) => {
 
 const parseArgs = (
   args: any[]
-): { options: Partial<Options>; paths: string[] } =>
-  args.reduce(
+): { options: Partial<Options>; paths: string[]; entries: string[] } => {
+  let entry = false;
+  return args.reduce(
     (acc, arg) => {
+      if (entry) {
+        entry = false;
+        acc.entries.push(arg);
+        return acc;
+      }
+
       switch (arg) {
         case "-h":
         case "--help":
@@ -54,19 +62,23 @@ const parseArgs = (
         case "--version":
           acc.options.version = true;
           break;
+        case "-e":
+        case "--entrypoint":
+          entry = true;
+          break;
         default:
           acc.paths.push(arg);
       }
 
       return acc;
     },
-    { options: {}, paths: [] }
+    { options: {}, paths: [], entries: [] }
   );
-
+};
 export const run = async (args: string[]) => {
   const config: Partial<Options> =
     cosmiconfigSync("destiny").search()?.config ?? {};
-  const { options, paths } = parseArgs(args);
+  const { options, paths, entries } = parseArgs(args);
 
   const mergedOptions: Options = {
     ...defaultOptions,
@@ -88,7 +100,7 @@ export const run = async (args: string[]) => {
     return;
   }
 
-  await formatFileStructure(filesToRestructure, filesToEdit);
+  await formatFileStructure(filesToRestructure, filesToEdit, entries);
 };
 
 if (process.env.NODE_ENV !== "test") {

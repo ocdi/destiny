@@ -1,5 +1,6 @@
 import { Graph } from "./shared/Graph";
 import { isTestFile } from "./shared/isTestFile";
+import path from "path";
 
 const invertGraph = (graph: Graph) => {
   const invertedGraph: Graph = {};
@@ -35,7 +36,7 @@ export function findEntryPoints(graph: Graph) {
   const levelMap: Record<number, string[]> = {};
 
   possibleEntryPoints.forEach(k => {
-    const n = k.split("/").length;
+    const n = k.split(path.sep).length;
 
     if (!(n in levelMap)) {
       levelMap[n] = [];

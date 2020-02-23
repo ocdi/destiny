@@ -28,6 +28,11 @@ export const formatFileStructure = async (
 
     let foundEntries = findEntryPoints(graph);
     if (entries.length) {
+      // add all the detected entrypoints as unused
+      foundEntries
+        .filter(a => !entries.includes(a))
+        .forEach(f => unusedFiles.push(f));
+
       foundEntries = foundEntries.filter(a => entries.includes(a));
     }
 

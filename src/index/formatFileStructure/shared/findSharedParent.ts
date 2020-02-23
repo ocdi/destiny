@@ -3,7 +3,7 @@ import path from "path";
 export const findSharedParent = (paths: string[]) => {
   if (paths.length === 1) return path.dirname(paths[0]);
 
-  const fragments: string[][] = paths.map(x => x.split("/"));
+  const fragments: string[][] = paths.map(x => x.split(path.sep));
   const parentPaths: string[] = [];
 
   for (let i = 0; i < fragments[0].length; i++) {
@@ -14,5 +14,5 @@ export const findSharedParent = (paths: string[]) => {
     }
   }
 
-  return parentPaths.join("/");
+  return parentPaths.join(path.sep);
 };
